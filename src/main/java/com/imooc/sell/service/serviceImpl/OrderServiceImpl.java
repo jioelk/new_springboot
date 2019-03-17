@@ -8,6 +8,8 @@ import com.imooc.sell.dataObject.OrderMaster;
 import com.imooc.sell.dataObject.ProductInfo;
 import com.imooc.sell.dto.CartDto;
 import com.imooc.sell.dto.OrderDto;
+import com.imooc.sell.enumaaa.OrderStatus;
+import com.imooc.sell.enumaaa.PayStatus;
 import com.imooc.sell.enumaaa.ResultEnum;
 import com.imooc.sell.enumaaa.SellException;
 import com.imooc.sell.service.OrderService;
@@ -20,7 +22,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
@@ -32,6 +36,7 @@ import java.util.stream.Collectors;
  **/
 @Service
 @Slf4j
+@Transactional
 public class OrderServiceImpl implements OrderService {
 
     @Autowired
@@ -67,8 +72,9 @@ public class OrderServiceImpl implements OrderService {
         }
         //插入订单主表
         OrderMaster orderMaster=new OrderMaster();
+        orderDto.setOrderId(uniqueKey);
         BeanUtils.copyProperties(orderDto,orderMaster);
-        orderMaster.setOrderId(uniqueKey);
+      //  orderMaster.setOrderId(uniqueKey);
         orderMaster.setOrderAmount(total);
         orderMasterDao.save(orderMaster);
         //4.扣库存
@@ -76,7 +82,7 @@ public class OrderServiceImpl implements OrderService {
                 .map(e -> new CartDto(e.getProductId(), e.getProductQuantity()))
                 .collect(Collectors.toList());
         productInfoService.decreaseStock(cartDtoList);
-        return null;
+        return orderDto;
     }
 
     @Override
@@ -104,16 +110,70 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDto cancal(OrderDto orderDto) {
-        return null;
+        //检测订单状态
+        if(!(orderDto.getOrderStatus()== OrderStatus.NEW))
+        {
+            log.error("订单状态不正确,不能再取消",orderDto.getOrderStatus());
+            throw new SellException(ResultEnum.ORDER_STATUS_ERROR);
+        }
+        //更新订单状态
+        OrderMaster orderMaster = orderMasterDao.findOne(orderDto.getOrderId());
+        orderMaster.setOrderStatus(OrderStatus.CANCEL);
+        OrderMaster save = orderMasterDao.save(orderMaster);
+        orderDto.setOrderStatus(OrderStatus.CANCEL);
+        if(save==null)
+        {
+            throw new SellException(ResultEnum.UPDATE_ERROR);
+        }
+        if(CollectionUtils.isEmpty(orderDto.getOrderDetailList()))
+        {
+            throw new SellException(ResultEnum.ORDER_NOT_EXIST);
+        }
+        //加库存
+        List<CartDto> cartDtoList = orderDto.getOrderDetailList().stream()
+                .map(e -> new CartDto(e.getProductId(),e.getProductQuantity())).collect(Collectors.toList());
+        productInfoService.increaseStock(cartDtoList);
+        //如果已支付
+        return orderDto;
     }
 
     @Override
     public OrderDto finish(OrderDto orderDto) {
-        return null;
+        //检测订单状态
+        if(!(orderDto.getOrderStatus()== OrderStatus.NEW))
+        {
+            log.error("订单状态不正确,不能再取消",orderDto.getOrderStatus());
+            throw new SellException(ResultEnum.ORDER_STATUS_ERROR);
+        }
+        orderDto.setOrderStatus(OrderStatus.FINISH);
+            OrderMaster orderMaster=new OrderMaster();
+            BeanUtils.copyProperties(orderDto,orderMaster);
+        OrderMaster save = orderMasterDao.save(orderMaster);
+        if(save==null)
+        {
+            throw new SellException(ResultEnum.UPDATE_ERROR);
+        }
+        return orderDto;
     }
 
     @Override
     public OrderDto paid(OrderDto orderDto) {
-        return null;
+        //检测订单状态
+        if(!(orderDto.getOrderStatus()== OrderStatus.NEW))
+        {
+            log.error("订单状态不正确,不能再取消",orderDto.getOrderStatus());
+            throw new SellException(ResultEnum.ORDER_STATUS_ERROR);
+        }
+        //检测订单支付状态
+        if(!orderDto.getPayStatus().equals(PayStatus.WAIT))
+        {
+            throw new SellException(ResultEnum.ORDER_STATUS_ERROR);
+        }
+        orderDto.setPayStatus(PayStatus.SUCCESS);
+        OrderMaster orderMaster=new OrderMaster();
+        BeanUtils.copyProperties(orderDto,orderMaster);
+        orderMasterDao.save(orderMaster);
+
+        return orderDto;
     }
 }

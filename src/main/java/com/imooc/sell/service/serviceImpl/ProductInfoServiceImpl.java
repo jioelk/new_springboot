@@ -1,16 +1,18 @@
 package com.imooc.sell.service.serviceImpl;
 
 import com.imooc.sell.Dao.ProductInfoDao;
+import com.imooc.sell.dataObject.ProductInfo;
 import com.imooc.sell.dto.CartDto;
 import com.imooc.sell.enumaaa.ProStatus;
-import com.imooc.sell.dataObject.ProductInfo;
 import com.imooc.sell.enumaaa.ResultEnum;
 import com.imooc.sell.enumaaa.SellException;
 import com.imooc.sell.service.ProductInfoService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import javax.transaction.Transactional;
 import java.awt.print.Pageable;
@@ -18,6 +20,7 @@ import java.util.List;
 
 @Service
 @Transactional
+@Slf4j
 public class ProductInfoServiceImpl implements ProductInfoService
 {
     @Autowired
@@ -25,7 +28,15 @@ public class ProductInfoServiceImpl implements ProductInfoService
 
     @Override
     public void increaseStock(List<CartDto> cartList) {
+        Assert.notNull(cartList);
+             for(CartDto cartDto:cartList)
+             {
+                 ProductInfo productInfo = productInfoDao.findOne(cartDto.getProductId());
+                 int num = productInfo.getProductStock() + cartDto.getProductQuantity();
+                 productInfo.setProductStock(num);
+                 productInfoDao.save(productInfo);
 
+             }
     }
 
     @Override

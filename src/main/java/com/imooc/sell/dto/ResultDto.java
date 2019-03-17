@@ -16,4 +16,12 @@ public class ResultDto<T> {
     //，即List<Object>,
     //可以放任意类型
     private T data;
+
+    public ResultDto(Integer code, String msg, T data) {
+        this.code = code;
+        this.msg = msg;
+        this.data = data;
+    }
+
+
 }
