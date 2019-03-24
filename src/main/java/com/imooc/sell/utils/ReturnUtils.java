@@ -17,9 +17,9 @@ public class ReturnUtils {
         return resultDto;
     }
 
-    public static ResultDto success(){
+   public static ResultDto success(){
         return success(null);
-    }
+   }
 
     public static ResultDto fail(Integer code ,String message){
 

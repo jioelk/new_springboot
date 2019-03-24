@@ -1,5 +1,7 @@
 package com.imooc.sell.dataObject;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.imooc.sell.utils.DateToLongSerializer;
 import lombok.Data;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -32,7 +34,8 @@ public class OrderDetail {
 
     private  String productIcon;
 
+    @JsonSerialize(using = DateToLongSerializer.class)
     private Date createTime;
-
+    @JsonSerialize(using = DateToLongSerializer.class)
     private  Date updateTime;
 }

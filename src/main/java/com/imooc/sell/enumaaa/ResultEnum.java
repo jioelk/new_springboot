@@ -17,7 +17,9 @@ public enum ResultEnum {
     ORDER_STATUS_ERROR(14,"订单状态不正确"),
     UPDATE_ERROR(15,"更新失败"),
     PAY_ERROR(16,"订单支付异常"),
-    CART_EMPTY(17,"购物车为空")
+    CART_EMPTY(17,"购物车为空"),
+    OWNER_UNCORRECT(18,"此用户不是订单用户"),
+    WX_AUTHORITY_ERROR(19,"微信授权错误")
 
             ;
 

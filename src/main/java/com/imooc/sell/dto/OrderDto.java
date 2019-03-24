@@ -1,8 +1,11 @@
 package com.imooc.sell.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.imooc.sell.dataObject.OrderDetail;
 import com.imooc.sell.enumaaa.OrderStatus;
 import com.imooc.sell.enumaaa.PayStatus;
+import com.imooc.sell.utils.DateToLongSerializer;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -36,11 +39,14 @@ public class OrderDto {
     //支付状态 0等待支付 1支付成功
     @ApiModelProperty("0等待支付 1支付成功")
     private PayStatus payStatus;
-
+     //创建时间
+    @JsonSerialize(using = DateToLongSerializer.class)
     private Date createTime;
-
+    //更新时间
+    @JsonSerialize(using = DateToLongSerializer.class)
     private  Date updateTime;
 
     @ApiModelProperty("订单详情列表")
+   // @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<OrderDetail> orderDetailList;
 }

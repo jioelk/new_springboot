@@ -76,6 +76,8 @@ public class OrderServiceImpl implements OrderService {
         BeanUtils.copyProperties(orderDto,orderMaster);
       //  orderMaster.setOrderId(uniqueKey);
         orderMaster.setOrderAmount(total);
+        orderMaster.setOrderStatus(OrderStatus.NEW);
+        orderMaster.setPayStatus(PayStatus.WAIT);
         orderMasterDao.save(orderMaster);
         //4.扣库存
         final List<CartDto> cartDtoList = orderDetailList.stream()
