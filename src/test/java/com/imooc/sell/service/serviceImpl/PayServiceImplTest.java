@@ -25,7 +25,7 @@ public class PayServiceImplTest {
     private OrderService orderService;
     @Test
     public void create() {
-        OrderDto one = orderService.findOne("fsfsfa1f5a1f151a");
+        OrderDto one = orderService.findOne("1552985999549485593");
         payService.create(one);
     }
 }
